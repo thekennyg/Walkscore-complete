@@ -3,6 +3,7 @@ import csv
 import aiohttp
 import asyncio
 import datetime
+from datetime import datetime
 from draw import Graph
 import os
 import platform
@@ -19,9 +20,10 @@ hard_sampling = list(sampling)
 hard_sampling.append('walk')
 hard_sampling.append('bike')
 hard_sampling.append('transit')
-now = datetime.datetime.now()
+now = datetime.now()
+modified = now.strftime('%X')
 current_directory = os.getcwd()
-final_directory = os.path.join(os.sep, current_directory + os.sep, str(now))
+final_directory = os.path.join(os.sep, current_directory + os.sep, str(modified))
 os.mkdir(final_directory)
 os.chdir(final_directory)
 
