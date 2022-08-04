@@ -24,7 +24,7 @@ now = datetime.now()
 modified = now.strftime('%X')
 current_directory = os.getcwd()
 final_directory = os.path.join(os.sep, current_directory + os.sep, str(modified))
-os.mkdir(final_directory)
+os.makedirs(final_directory)
 os.chdir(final_directory)
 
 async def main_scrape():
