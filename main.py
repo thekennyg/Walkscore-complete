@@ -21,10 +21,10 @@ hard_sampling.append('walk')
 hard_sampling.append('bike')
 hard_sampling.append('transit')
 now = datetime.now()
-modified = now.strftime('%X')
+modified = now.strftime('%B %d %Hh%Mm%Ss%p')
 current_directory = os.getcwd()
 final_directory = os.path.join(os.sep, current_directory + os.sep, str(modified))
-os.makedirs(final_directory)
+os.mkdir(final_directory)
 os.chdir(final_directory)
 
 async def main_scrape():
