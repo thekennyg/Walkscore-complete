@@ -33,6 +33,8 @@ Scraping WalkScore should not have a large ratelimit. However, roughly <1% of th
 
 Addresses with no scores will always be put in the recheck.csv. Essentially, the ones that repeatedly have errors should not be used for data analysis.
 
+Additionally, if an error such as 'connection was aborted by your local machine' pops up and stops the script, it is due to something on your computer (etc: firewall/antivirus)
+
 ![App Screenshot](https://i.ibb.co/XZrBkZG/new.jpg)
 ![App Screenshot](https://i.ibb.co/3zvYpGR/ewven-newer.jpg)
 ![App Screenshot](https://i.ibb.co/dWSYr38/Screenshot-2022-08-03-at-4-11-07-PM.png)
