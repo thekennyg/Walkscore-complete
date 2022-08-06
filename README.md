@@ -24,8 +24,7 @@ This script scrapes data from WalkScore's website.
 
 By default, the script opens 'input.csv', then gets the address from column 'Match_addr'. You can edit main.py to change the names.
 
-The script grabs the following score types: walk, bike, transit. It then creates a timestamped folder of when the script was run with graphs for each address.
-It will then write the scores in a timestamped copy of the original csv file but with the scores added in that folder.
+The script grabs the following score types: walk, bike, transit. It then creates a timestamped folder and within that, a timestamped csv file with all the scores added. You can also uncomment some code to genereate graphs.
 
 Note: Some scores may have 0 values in one of the score categories.
 # Important
