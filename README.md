@@ -34,6 +34,8 @@ Addresses with no scores will always be put in the recheck.csv.
 
 # Even more Important
 If something along the lines of '[WinError 10053] An established connection was aborted by the software in your host machine' occurs, it is due to antivirus/firewall settings on your computer. Running it on my mac, i got through the sample file in a minute, but windows users may have to change some settings.
+
+CSV results may not save properly if you simply close the terminal. For the csv file to update, hit Control+C to exit,
 ![App Screenshot](https://i.ibb.co/XZrBkZG/new.jpg)
 ![App Screenshot](https://i.ibb.co/3zvYpGR/ewven-newer.jpg)
 ![App Screenshot](https://i.ibb.co/dWSYr38/Screenshot-2022-08-03-at-4-11-07-PM.png)
