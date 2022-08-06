@@ -1,40 +1,89 @@
+import re
+import csv
+import aiohttp
+import asyncio
+import datetime
+from datetime import datetime
+from draw import Graph
+import os
+import platform
 
-# WalkScore Extraction
+# edit below to change csv name
+file = open('input.csv', encoding='utf8')
+current_line = ''
+sample = csv.DictReader(file)
+sampling = sample.fieldnames
+hard_sampling = list(sampling)
+hard_sampling.append('walk')
+hard_sampling.append('bike')
+hard_sampling.append('transit')
+now = datetime.now()
+modified = now.strftime('%B%d%Hh%Mm%Ss%p')
+current_directory = os.getcwd()
+final_directory = os.path.join(os.sep, current_directory + os.sep, str(modified))
+os.mkdir(final_directory)
+os.chdir(final_directory)
+completed_scores = open(f'{modified}.csv', 'w', newline='')
 
-WalkScore Extraction by Kenny Li
-#### This project was designed (happily) for Dr. Wu's research group.
-## Installation
-This script requires Python 3 to run. For best performance, download Python 3.10 found here: https://www.python.org/downloads/release/python-3105/.
+new_writer = csv.DictWriter(completed_scores, hard_sampling)
+
+new_writer.writeheader()
+
+output_file = open('recheck.csv', 'w', newline='')
+dict_writer = csv.DictWriter(output_file, sampling)
+dict_writer.writeheader()
 
 
+async def main_scrape():
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
+        tasks = []
+        for line in sample:
+            # edit below to change csv column name
+            addy = line['Match_addr']
+            future = asyncio.ensure_future(get_scores(session, addy, line))
+            tasks.append(future)
+        await asyncio.gather(*tasks)
 
-This project **requires the installation of** prerequisites (aiohttp, numpy, matplotlib) in order to work properly.
 
-To install the prerequisites run this command in terminal:
+async def get_scores(session, address, full):
+    outside = []
+    temper = []
+    completed = full
+    url = f'https://www.walkscore.com/score/{address}'
+    try:
+        async with session.get(url) as get:
+            response = await get.text()
+            try:
+                walk = int(re.search(pattern=r'has a Walk Score of (\d*)', string=response).group(1))
+            except:
+                walk = 0
+            try:
+                bike = int(re.search(pattern=r'png" alt="(\d*) Bike Score of', string=response).group(1))
+            except:
+                bike = 0
+            try:
+                transit = int(re.search(pattern=r'png" alt="(\d*) Transit Score of', string=response).group(1))
+            except:
+                transit = 0
+            print(f'{address} walk: {walk} bike: {bike} transit: {transit}')
+            # g = Graph(walk, bike, transit, address)
+            # g.construct()
+            # uncomment above if you want to generate graphs (may take a siginificant more amount of CPU power)
+            if walk == 0 and bike == 0 and transit == 0:
+                outside.append(full)
+                dict_writer.writerows(outside)
+            else:
+                completed['walk'] = walk
+                completed['bike'] = bike
+                completed['transit'] = transit
+                temper.append(completed)
+                new_writer.writerows(temper)
+    except aiohttp.ServerDisconnectedError:
+        outside.append(full)
+        dict_writer.writerows(outside)
 
-```
-pip install numpy aiohttp matplotlib
-```
-Note that Python 3.10 should automatically have pip installed with it. If it isn't, read this: https://pip.pypa.io/en/stable/installation/
-
-
-    
-## Basic Usage
-This script scrapes data from WalkScore's website. 
-
-By default, the script opens 'input.csv', then gets the address from column 'Match_addr'. You can edit main.py to change the names.
-
-The script grabs the following score types: walk, bike, transit. It then creates a timestamped folder of when the script was run with graphs for each address.
-It will then write the scores in a timestamped copy of the original csv file but with the scores added in that folder.
-
-Note: Some scores may have 0 values in one of the score categories.
-# Important
-Scraping WalkScore should not have a large ratelimit. However, roughly <1% of the csv file will be skipped. The 'recheck.csv' file has all error generated csv lines (wrong address formatting, timeouts). You can simply copy and paste it back in input.csv to recheck them.
-
-Addresses with no scores will always be put in the recheck.csv.
-
-# Even more Important
-If something along the lines of '[WinError 10053] An established connection was aborted by the software in your host machine' occurs, it is due to antivirus/firewall settings on your computer. Running it on my mac, i got through the sample file in a minute, but windows users may have to change some settings.
-![App Screenshot](https://i.ibb.co/XZrBkZG/new.jpg)
-![App Screenshot](https://i.ibb.co/3zvYpGR/ewven-newer.jpg)
-![App Screenshot](https://i.ibb.co/dWSYr38/Screenshot-2022-08-03-at-4-11-07-PM.png)
+#aiohttp.client_exceptions.ClientOSError: [WinError 10053] An established connection was aborted by the software in your host machine
+try:
+    asyncio.run(main_scrape())
+except asyncio.exceptions.TimeoutError:
+    pass
