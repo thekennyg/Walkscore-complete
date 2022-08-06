@@ -8,11 +8,8 @@ from draw import Graph
 import os
 import platform
 
-
 # edit below to change csv name
 file = open('input.csv', encoding='utf8')
-outside = []
-completed = []
 current_line = ''
 sample = csv.DictReader(file)
 sampling = sample.fieldnames
@@ -26,6 +23,16 @@ current_directory = os.getcwd()
 final_directory = os.path.join(os.sep, current_directory + os.sep, str(modified))
 os.mkdir(final_directory)
 os.chdir(final_directory)
+completed_scores = open(f'{modified}.csv', 'w', newline='')
+
+new_writer = csv.DictWriter(completed_scores, hard_sampling)
+
+new_writer.writeheader()
+
+output_file = open('recheck.csv', 'w', newline='')
+dict_writer = csv.DictWriter(output_file, sampling)
+dict_writer.writeheader()
+
 
 async def main_scrape():
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
@@ -39,9 +46,9 @@ async def main_scrape():
 
 
 async def get_scores(session, address, full):
-    global outside
-    global completed
-    bully = full
+    outside = []
+    temper = []
+    completed = full
     url = f'https://www.walkscore.com/score/{address}'
     try:
         async with session.get(url) as get:
@@ -59,31 +66,24 @@ async def get_scores(session, address, full):
             except:
                 transit = 0
             print(f'{address} walk: {walk} bike: {bike} transit: {transit}')
-            g = Graph(walk, bike, transit, address)
-            g.construct()
+            # g = Graph(walk, bike, transit, address)
+            # g.construct()
+            # uncomment above if you want to generate graphs (may take a siginificant more amount of CPU power)
             if walk == 0 and bike == 0 and transit == 0:
                 outside.append(full)
+                dict_writer.writerows(outside)
             else:
-                bully['walk'] = walk
-                bully['bike'] = bike
-                bully['transit'] = transit
-                completed.append(bully)
+                completed['walk'] = walk
+                completed['bike'] = bike
+                completed['transit'] = transit
+                temper.append(completed)
+                new_writer.writerows(temper)
     except aiohttp.ServerDisconnectedError:
         outside.append(full)
+        dict_writer.writerows(outside)
 
-
+#aiohttp.client_exceptions.ClientOSError: [WinError 10053] An established connection was aborted by the software in your host machine
 try:
     asyncio.run(main_scrape())
 except asyncio.exceptions.TimeoutError:
     pass
-with open(f'{now}.csv', 'w', newline='') as completed_scores:
-    dict_writer = csv.DictWriter(completed_scores, hard_sampling)
-    dict_writer.writeheader()
-    dict_writer.writerows(completed)
-os.chdir(current_directory)
-with open('recheck.csv', 'w', newline='') as output_file:
-    dict_writer = csv.DictWriter(output_file, sampling)
-    dict_writer.writeheader()
-    dict_writer.writerows(outside)
-
-# https://compiletoi.net/fast-scraping-in-python-with-asyncio/
